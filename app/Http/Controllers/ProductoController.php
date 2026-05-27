@@ -8,25 +8,39 @@ use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
-    // Muestra la lista de todos los productos
+   
     public function index()
     {
         $productos = Producto::with('categoria')->get();
         return view('productos.index', compact('productos'));
     }
 
-    // Muestra el detalle de un producto especifico
+   
     public function show($id)
     {
         $producto = Producto::with('categoria')->findOrFail($id);
         return view('productos.show', compact('producto'));
     }
 
-    // Muestra la galeria de productos con fotos
-public function galeria()
+    
+public function galeria(Request $request)
 {
-    $productos = Producto::with('categoria')->get();
-    return view('productos.galeria', compact('productos'));
-}
+    $categorias = \App\Models\Categoria::all();
+    $query = Producto::with('categoria');
 
+  
+    if ($request->has('categoria') && $request->categoria != '') {
+        $query->where('id_categoria', $request->categoria);
+    }
+
+    
+    if ($request->has('buscar') && $request->buscar != '') {
+        $query->where('nombre', 'LIKE', '%' . $request->buscar . '%');
+    }
+
+    $productos = $query->get();
+    $categoriaSeleccionada = $request->categoria;
+
+    return view('productos.galeria', compact('productos', 'categorias', 'categoriaSeleccionada'));
+}
 }
